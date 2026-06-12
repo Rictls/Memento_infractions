@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mémento">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#0d1117">
+<link rel="manifest" href="manifest.json">
+<title>Mémento Infractions — Marmotte34</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--s1:#161b22;--s2:#1c2333;--bd:#30363d;--t1:#e6edf3;--t2:#8b949e;--ac:#f0883e;--bl:#388bfd;--gn:#3fb950;--ye:#d29922;--rd:#f85149;--pu:#bc8cff;--tg:#21262d}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-height:100dvh;overflow-x:hidden}
+
+/* NAV */
+.nav{display:flex;background:var(--s1);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:200}
+.ntab{flex:1;padding:8px 4px 7px;text-align:center;font-size:10px;font-weight:500;color:var(--t2);cursor:pointer;border-bottom:2px solid transparent;-webkit-tap-highlight-color:transparent;user-select:none;transition:color .15s}
+.ntab.active{color:var(--ac);border-bottom-color:var(--ac)}
+.ntab .ti{font-size:19px;display:block;margin-bottom:2px}
+.badge-c{display:inline-block;background:var(--ac);color:#000;border-radius:8px;font-size:9px;font-weight:700;padding:0 4px;margin-left:2px;vertical-align:middle;min-width:15px;text-align:center}
+
+/* PAGES */
+.page{display:none}
+.page.active{display:block}
+
+/* SEARCH BAR */
+.sbar{padding:10px 12px;background:var(--bg);border-bottom:1px solid var(--bd);position:sticky;top:41px;z-index:100}
+.swrap{position:relative}
+.sico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--t2);pointer-events:none;font-size:14px}
+input[type=search]{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-family:'Inter',sans-serif;font-size:14px;padding:8px 32px;outline:none;-webkit-appearance:none}
+input[type=search]:focus{border-color:var(--bl)}
+input[type=search]::placeholder{color:var(--t2)}
+.xclear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--t2);cursor:pointer;font-size:16px;display:none;padding:4px;line-height:1}
+
+/* FILTER CHIPS */
+.fbar{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;border-bottom:1px solid var(--bd);background:var(--bg)}
+.fbar::-webkit-scrollbar{display:none}
+.fchip{flex-shrink:0;padding:5px 10px;border-radius:20px;border:1px solid var(--bd);background:var(--tg);color:var(--t2);font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;user-select:none;-webkit-tap-highlight-color:transparent;transition:all .15s}
+.fchip.active{background:var(--ac);color:#000;border-color:var(--ac);font-weight:600}
+.fall.active{background:var(--bl);border-color:var(--bl);color:#fff}
+
+/* STATS */
+.stbar{padding:5px 12px 7px;font-size:11px;color:var(--t2);display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--bd);background:var(--bg)}
+.stbar strong{color:var(--t1);font-variant-numeric:tabular-nums}
+
+/* RESULTS */
+#results,#fav-results,#edit-list{padding:6px 10px 110px;display:flex;flex-direction:column;gap:5px}
+
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:10px 12px 10px 15px;position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:10px 0 0 10px}
+.card[data-c=v]::before{background:var(--gn)}
+.card[data-c=j]::before{background:var(--ye)}
+.card[data-c=o]::before{background:var(--ac)}
+.card[data-c=b]::before{background:#484f58}
+.card[data-c=d]::before{background:var(--rd)}
+.card[data-c=p]::before{background:var(--pu)}
+.card:active{background:var(--s2)}
+.ctop{display:flex;gap:8px;margin-bottom:6px;align-items:flex-start}
+.cdesc{font-size:13px;line-height:1.45;color:var(--t1);flex:1;cursor:pointer}
+.cright{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.cnat{font-family:'DM Mono',monospace;font-size:11px;color:var(--t2);background:var(--tg);padding:2px 6px;border-radius:4px;cursor:pointer}
+.fbtn{background:none;border:none;cursor:pointer;font-size:18px;line-height:1;padding:0;-webkit-tap-highlight-color:transparent}
+.cfoot{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.badge{font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace}
+.b-cl{background:var(--s2);color:var(--t1);border:1px solid var(--bd)}
+.b-am{background:#1a2f1a;color:var(--gn);border:1px solid #2ea04326}
+.b-pt{background:#3d1f1f;color:var(--rd);border:1px solid #f8514926}
+.b-dl{background:#3d1f1f;color:#ff7b72;border:1px solid #f8514926;font-family:'Inter',sans-serif;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+.b-mo{background:#1a1f3a;color:var(--bl);border:1px solid #388bfd26;font-family:'Inter',sans-serif;font-size:10px}
+.b-pe{background:#2a1f3d;color:var(--pu);border:1px solid #bc8cff26;font-family:'Inter',sans-serif;font-size:10px}
+.b-ic{font-size:13px;opacity:.85}
+.bcat{font-size:10px;color:var(--t2);background:var(--tg);padding:2px 6px;border-radius:4px;margin-left:auto}
+mark{background:#f0883e33;color:var(--ac);border-radius:2px;padding:0 1px}
+
+/* MODAL */
+#modal{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);align-items:flex-end;justify-content:center}
+#modal.open{display:flex}
+.msheet{width:100%;max-width:600px;background:var(--s1);border-radius:16px 16px 0 0;border:1px solid var(--bd);border-bottom:none;max-height:90dvh;overflow-y:auto;animation:sup .25s cubic-bezier(.32,1.22,.58,1)}
+@keyframes sup{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.mhandle{width:40px;height:4px;background:var(--bd);border-radius:2px;margin:10px auto 0}
+.mbody{padding:16px 18px 40px}
+.mn{font-family:'DM Mono',monospace;font-size:12px;color:var(--bl);margin-bottom:8px}
+.mt{font-size:14px;font-weight:600;line-height:1.55;color:var(--t1);margin-bottom:12px}
+.mb{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.msec{margin-bottom:14px}
+.msect{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t2);margin-bottom:7px;font-weight:600}
+.marts{display:flex;flex-wrap:wrap;gap:5px}
+.achip{font-family:'DM Mono',monospace;font-size:12px;color:var(--bl);background:#1c2f4a;padding:3px 8px;border-radius:5px;border:1px solid #388bfd26}
+.mmgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.mmeas{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--s2);border-radius:6px;font-size:12px;color:var(--t2)}
+.mmeas.on{color:var(--t1);background:#1c2a1c}
+.mfav{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px;background:var(--tg);border:1px solid var(--bd);border-radius:8px;color:var(--t2);font-size:13px;font-weight:500;cursor:pointer;margin-bottom:8px;font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;transition:all .15s}
+.mfav.on{background:#3a2010;border-color:var(--ac);color:var(--ac)}
+.medit{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px;background:var(--tg);border:1px solid var(--bd);border-radius:8px;color:var(--t2);font-size:13px;cursor:pointer;margin-bottom:8px;font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent}
+.medit:active{background:var(--s2)}
+.mclose{display:block;width:100%;padding:10px;background:var(--tg);border:1px solid var(--bd);border-radius:8px;color:var(--t2);font-size:13px;cursor:pointer;font-family:'Inter',sans-serif}
+.mclose:active{background:var(--s2)}
+
+/* EDIT MODAL */
+#emodal{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:flex-end;justify-content:center}
+#emodal.open{display:flex}
+.esheet{width:100%;max-width:600px;background:var(--s1);border-radius:16px 16px 0 0;border:1px solid var(--ac);border-bottom:none;max-height:95dvh;overflow-y:auto;animation:sup .25s cubic-bezier(.32,1.22,.58,1)}
+.ebody{padding:16px 18px 40px}
+.etitle{font-size:15px;font-weight:600;color:var(--ac);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.field-group{margin-bottom:14px}
+.field-label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--t2);margin-bottom:6px;font-weight:600}
+.field-input,.field-textarea,.field-select{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-family:'Inter',sans-serif;font-size:13px;padding:9px 12px;outline:none;-webkit-appearance:none;transition:border-color .2s}
+.field-input:focus,.field-textarea:focus,.field-select:focus{border-color:var(--ac)}
+.field-textarea{resize:vertical;min-height:90px;line-height:1.5}
+.field-select option{background:var(--s2);color:var(--t1)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.check-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.chk-item{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;-webkit-tap-highlight-color:transparent}
+.chk-item input{width:16px;height:16px;accent-color:var(--ac)}
+.natinf-note{font-size:11px;color:var(--t2);margin-top:4px;font-style:italic}
+.btn-save{display:block;width:100%;padding:13px;background:var(--ac);border:none;border-radius:8px;color:#000;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent}
+.btn-cancel{display:block;width:100%;padding:11px;background:var(--tg);border:1px solid var(--bd);border-radius:8px;color:var(--t2);font-size:13px;cursor:pointer;font-family:'Inter',sans-serif}
+.btn-delete{display:block;width:100%;padding:11px;background:#3d1f1f;border:1px solid var(--rd);border-radius:8px;color:var(--rd);font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px}
+.btn-restore{display:block;width:100%;padding:11px;background:#1c2a1c;border:1px solid var(--gn);border-radius:8px;color:var(--gn);font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px}
+
+/* CAT GRID */
+.catgrid{padding:10px 10px 110px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.catcard{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.catcard:active{background:var(--s2)}
+.caticon{font-size:24px;margin-bottom:6px}
+.catname{font-size:12px;font-weight:600;color:var(--t1);line-height:1.3;margin-bottom:4px}
+.catcount{font-size:11px;color:var(--t2)}
+
+/* FAV PAGE */
+.fav-hdr{padding:8px 12px 4px;font-size:13px;color:var(--t2)}
+.fav-hdr strong{color:var(--t1)}
+.empty-state{text-align:center;padding:60px 20px;color:var(--t2)}
+.empty-state .ei{font-size:40px;margin-bottom:12px}
+.empty-state h3{font-size:16px;color:var(--t1);margin-bottom:6px}
+.empty-state p{font-size:13px}
+
+/* EDIT PAGE */
+.edit-hdr{padding:12px 12px 0;display:flex;flex-direction:column;gap:8px}
+.edit-hdr-title{font-size:15px;font-weight:600;color:var(--t1)}
+.edit-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-action{display:flex;align-items:center;gap:6px;padding:9px 14px;border:1px solid var(--bd);border-radius:8px;background:var(--s2);color:var(--t1);font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;transition:all .15s;flex:1;justify-content:center}
+.btn-action.primary{background:var(--ac);color:#000;border-color:var(--ac)}
+.btn-action.csv{background:#1a2f1a;color:var(--gn);border-color:var(--gn)26}
+.edit-filter{display:flex;gap:6px;padding:8px 12px 4px;overflow-x:auto;scrollbar-width:none}
+.edit-filter::-webkit-scrollbar{display:none}
+.edit-item{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:10px 12px 10px 15px;position:relative;overflow:hidden;display:flex;align-items:flex-start;gap:8px}
+.edit-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.edit-item.perso::before{background:var(--pu)}
+.edit-item.modif::before{background:var(--bl)}
+.edit-item-body{flex:1}
+.edit-item-desc{font-size:12px;color:var(--t1);line-height:1.4;margin-bottom:5px}
+.edit-item-meta{display:flex;gap:5px;flex-wrap:wrap}
+.edit-item-btns{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.btn-sm{background:none;border:1px solid var(--bd);border-radius:6px;color:var(--t2);cursor:pointer;padding:4px 8px;font-size:11px;font-family:'Inter',sans-serif;white-space:nowrap}
+.btn-sm.edit{border-color:var(--bl)40;color:var(--bl)}
+.btn-sm.del{border-color:var(--rd)40;color:var(--rd)}
+.btn-sm.rst{border-color:var(--gn)40;color:var(--gn)}
+
+/* CSV IMPORT */
+#csv-input{display:none}
+
+/* TOAST */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:9px 16px;font-size:13px;color:var(--t1);z-index:500;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px #000a}
+#toast.show{opacity:1}
+
+/* OFFLINE */
+.offl{display:none;align-items:center;gap:4px;font-size:11px;color:var(--ye);flex-shrink:0}
+.offl.show{display:flex}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="ntab active" id="tab-search" onclick="go('search')"><span class="ti">🔍</span>Recherche</div>
+  <div class="ntab" id="tab-cats" onclick="go('cats')"><span class="ti">📂</span>Catégories</div>
+  <div class="ntab" id="tab-favs" onclick="go('favs')"><span class="ti">⭐</span>Favoris<span class="badge-c" id="fc" style="display:none">0</span></div>
+  <div class="ntab" id="tab-edit" onclick="go('edit')"><span class="ti">✏️</span>Édition<span class="badge-c" id="ec" style="display:none">0</span></div>
+</div>
+
+<!-- RECHERCHE -->
+<div class="page active" id="page-search">
+  <div class="sbar"><div class="swrap">
+    <span class="sico">🔍</span>
+    <input type="search" id="qinput" placeholder="Infraction, NATINF, article…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <button class="xclear" id="qclear" onclick="clearQ()">✕</button>
+  </div></div>
+  <div class="fbar" id="fbar"><div class="fchip fall active" data-cat="all" onclick="setF('all',this)">Tout <span id="tc"></span></div></div>
+  <div class="stbar">
+    <span>Résultats : <strong id="rc">—</strong></span>
+    <span style="color:var(--bd)">·</span>
+    <span id="sx" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">Marmotte34 · 10 juin 2025</span>
+    <span class="offl" id="offl">📴</span>
+  </div>
+  <div id="results"></div>
+</div>
+
+<!-- CATEGORIES -->
+<div class="page" id="page-cats"><div class="catgrid" id="catgrid"></div></div>
+
+<!-- FAVORIS -->
+<div class="page" id="page-favs">
+  <div class="sbar"><div class="swrap">
+    <span class="sico">🔍</span>
+    <input type="search" id="fsinput" placeholder="Rechercher dans les favoris…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <button class="xclear" id="fsclear" onclick="clearFS()">✕</button>
+  </div></div>
+  <div class="fav-hdr" id="favhdr"></div>
+  <div id="fav-results"></div>
+</div>
+
+<!-- ÉDITION -->
+<div class="page" id="page-edit">
+  <div class="edit-hdr">
+    <div class="edit-hdr-title">✏️ Gestion des infractions</div>
+    <div class="edit-actions">
+      <button class="btn-action primary" onclick="openEditNew()">➕ Ajouter</button>
+      <button class="btn-action csv" onclick="document.getElementById('csv-input').click()">📥 Importer CSV</button>
+      <button class="btn-action" onclick="exportCSV()">📤 Exporter</button>
+    </div>
+    <div id="edit-stats" style="font-size:11px;color:var(--t2);padding-top:4px"></div>
+  </div>
+  <div class="edit-filter" id="edit-filter">
+    <div class="fchip active" data-ef="all" onclick="setEF('all',this)">Tout</div>
+    <div class="fchip" data-ef="perso" onclick="setEF('perso',this)">Perso ajoutés</div>
+    <div class="fchip" data-ef="modif" onclick="setEF('modif',this)">Modifiés</div>
+  </div>
+  <div id="edit-list"></div>
+</div>
+<input type="file" id="csv-input" accept=".csv,text/csv" onchange="importCSV(event)">
+
+<!-- MODAL DETAIL -->
+<div id="modal" onclick="closeM(event)">
+  <div class="msheet" id="msheet">
+    <div class="mhandle"></div>
+    <div class="mbody" id="mbody"></div>
+  </div>
+</div>
+
+<!-- MODAL EDITION -->
+<div id="emodal">
+  <div class="esheet">
+    <div class="mhandle"></div>
+    <div class="ebody" id="ebody"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONSTANTES
+// ═══════════════════════════════════════════════════════════
+const AM={'1':'11 €','2':'35 €','3':'68 €','4':'135 €','5':'750 €','1 bis':'17 €','2 bis':'22 €','3 bis':'45 €','4 bis':'90 €'};
+const CC={'Stationnement':'v','Vitesse':'j','Alcool/Stupéfiant':'o','Signalisation':'o','Dépassement':'o','Priorité':'o','Refus/Obstacles':'o','Permis de conduire':'o','Ceinture/Enfants':'o','Assurance':'b','Certificat/Immatriculation':'b','Circulation':'b','Éclairage':'b','Bruits/Fumées':'b','Chargement':'b','Poids lourds/Gabarit':'b','Autoroute/Voie express':'b','2 et 3 roues':'b','Immobilisation/Fourrière':'b','Tuning/Équipements':'b','Piétons/Cyclistes':'b','Quads/Voiturettes':'b','Environnement':'b'};
+const CI={'Stationnement':'🅿️','Vitesse':'⚡','Alcool/Stupéfiant':'🍺','Signalisation':'🚦','Dépassement':'🏎️','Priorité':'⚠️','Refus/Obstacles':'🚫','Permis de conduire':'📄','Ceinture/Enfants':'👶','Assurance':'🛡️','Certificat/Immatriculation':'📋','Circulation':'🚗','Éclairage':'💡','Bruits/Fumées':'📢','Chargement':'📦','Poids lourds/Gabarit':'🚛','Autoroute/Voie express':'🛣️','2 et 3 roues':'🏍️','Immobilisation/Fourrière':'🔒','Tuning/Équipements':'🔧','Piétons/Cyclistes':'🚶','Quads/Voiturettes':'🛺','Environnement':'🌿'};
+// Ordre des catégories défini manuellement
+const CAT_ORDER_DEFINED=[
+  // ── Groupe principal ──────────────────────
+  'Stationnement','Circulation','Signalisation','Priorité','Bruits/Fumées',
+  'Certificat/Immatriculation','Ceinture/Enfants','Permis de conduire','Assurance',
+  '2 et 3 roues','EDPM/Trottinettes','Quads/Voiturettes','Piétons/Cyclistes',
+  // ── Groupe secondaire ─────────────────────
+  'Chargement','Dépassement','Ordonnances médicales',
+  'Autoroute/Voie express','Environnement','Refus/Obstacles','Rodéos motorisés',
+  'Alcool/Stupéfiant','Taxis/VTC','Tuning/Équipements','Urgence sanitaire','Vitesse',
+  'Éclairage','Immobilisation/Fourrière','Poids lourds/Gabarit',
+];
+// Build ordered list keeping only cats present in data
+const existingCats=new Set(typeof INFRACTIONS!=='undefined'?INFRACTIONS.map(i=>i.categorie):[]);
+const CATS=CAT_ORDER_DEFINED.filter(c=>existingCats.has(c));
+// Add any cat not in CAT_ORDER_DEFINED at the end
+[...existingCats].forEach(c=>{if(!CATS.includes(c))CATS.push(c);});
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let curF='all',curQ='',fsQ='',efF='all';
+let dQ=null,dFS=null;
+
+// STORAGE: favoris, modifs, ajouts perso
+// ── VERSION : force reinit favoris si nouvelle version ──────────
+const APP_VERSION='v10';
+const storedVersion=localStorage.getItem('app_version');
+
+let MODS=JSON.parse(localStorage.getItem('mods')||'{}');
+let PERSO=JSON.parse(localStorage.getItem('perso')||'[]');
+let FAVS;
+
+if(storedVersion!==APP_VERSION){
+  // Nouvelle version ou premier lancement : charger les 62 Terrain Rapide
+  FAVS=new Set(typeof TERRAIN_RAPIDE!=='undefined'?TERRAIN_RAPIDE:[]);
+  localStorage.setItem('favs',JSON.stringify([...FAVS]));
+  localStorage.setItem('app_version',APP_VERSION);
+} else {
+  // Version connue : charger les favoris sauvegardés
+  FAVS=new Set(JSON.parse(localStorage.getItem('favs')||'[]'));
+}
+
+function saveFavs(){localStorage.setItem('favs',JSON.stringify([...FAVS]))}
+function saveMods(){localStorage.setItem('mods',JSON.stringify(MODS))}
+function savePerso(){localStorage.setItem('perso',JSON.stringify(PERSO))}
+
+// ═══════════════════════════════════════════════════════════
+// MERGE DATA — combine INFRACTIONS + PERSO + MODS
+// ═══════════════════════════════════════════════════════════
+function getAll(){
+  const base=INFRACTIONS.map(item=>{
+    if(MODS[item.natinf]){
+      return {...item,...MODS[item.natinf],_modified:true};
+    }
+    return item;
+  });
+  const persoItems=PERSO.map(p=>({...p,_perso:true}));
+  return [...base,...persoItems];
+}
+
+function getItem(natinf){
+  const all=getAll();
+  return all.find(i=>i.natinf===natinf);
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+document.getElementById('tc').textContent=`(${INFRACTIONS.length+PERSO.length})`;
+buildFilters();
+buildCatGrid();
+updateBadges();
+render();
+
+// ─── FILTERS ─────────────────────────────────────────────
+function buildFilters(){
+  const bar=document.getElementById('fbar');
+  // Remove old chips except "Tout"
+  while(bar.children.length>1) bar.removeChild(bar.lastChild);
+  const GROUP1_END='Piétons/Cyclistes';
+  let separatorAdded=false;
+  CATS.forEach(cat=>{
+    // Séparateur visuel entre groupe 1 et groupe 2
+    if(!separatorAdded && !CAT_ORDER_DEFINED.slice(0,13).includes(cat)){
+      separatorAdded=true;
+      const sep=document.createElement('div');
+      sep.style.cssText='flex-shrink:0;width:1px;background:var(--bd);margin:4px 2px;align-self:stretch';
+      bar.appendChild(sep);
+    }
+    const n=getAll().filter(i=>i.categorie===cat).length;
+    const el=document.createElement('div');
+    el.className='fchip';el.dataset.cat=cat;
+    el.textContent=`${cat} (${n})`;
+    el.onclick=()=>setF(cat,el);
+    bar.appendChild(el);
+  });
+}
+
+function buildCatGrid(){
+  const grid=document.getElementById('catgrid');
+  grid.innerHTML='';
+  CATS.forEach(cat=>{
+    const n=getAll().filter(i=>i.categorie===cat).length;
+    const el=document.createElement('div');
+    el.className='catcard';
+    el.innerHTML=`<div class="caticon">${CI[cat]||'📋'}</div><div class="catname">${esc(cat)}</div><div class="catcount">${n} infraction${n>1?'s':''}</div>`;
+    el.onclick=()=>{go('search');setF(cat,document.querySelector(`.fchip[data-cat="${cat}"]`));};
+    el.addEventListener('touchstart',()=>el.style.background='var(--s2)',{passive:true});
+    el.addEventListener('touchend',()=>el.style.background='',{passive:true});
+    grid.appendChild(el);
+  });
+}
+
+function updateBadges(){
+  const fc=document.getElementById('fc');
+  const nf=FAVS.size;
+  fc.textContent=nf;fc.style.display=nf?'inline-block':'none';
+  const ne=Object.keys(MODS).length+PERSO.length;
+  const ec=document.getElementById('ec');
+  ec.textContent=ne;ec.style.display=ne?'inline-block':'none';
+}
+
+// ═══════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════
+function go(t){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+t).classList.add('active');
+  document.getElementById('tab-'+t).classList.add('active');
+  if(t==='favs') renderFavs();
+  if(t==='edit') renderEdit();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════════════════════════
+document.getElementById('qinput').addEventListener('input',e=>{
+  clearTimeout(dQ);
+  dQ=setTimeout(()=>{
+    curQ=e.target.value.trim().toLowerCase();
+    document.getElementById('qclear').style.display=curQ?'block':'none';
+    render();
+  },150);
+});
+function clearQ(){document.getElementById('qinput').value='';document.getElementById('qclear').style.display='none';curQ='';render();}
+
+document.getElementById('fsinput').addEventListener('input',e=>{
+  clearTimeout(dFS);
+  dFS=setTimeout(()=>{
+    fsQ=e.target.value.trim().toLowerCase();
+    document.getElementById('fsclear').style.display=fsQ?'block':'none';
+    renderFavs();
+  },150);
+});
+function clearFS(){document.getElementById('fsinput').value='';document.getElementById('fsclear').style.display='none';fsQ='';renderFavs();}
+
+function setF(cat,el){
+  curF=cat;
+  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('active'));
+  if(el)el.classList.add('active');
+  render();
+}
+function setEF(f,el){
+  efF=f;
+  document.querySelectorAll('.fchip[data-ef]').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderEdit();
+}
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function hl(text,q){
+  if(!q)return esc(text);
+  const e=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return esc(text).replace(new RegExp(e,'gi'),m=>`<mark>${m}</mark>`);
+}
+function toast(msg,ms=2200){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),ms);
+}
+
+// ═══════════════════════════════════════════════════════════
+// FAV
+// ═══════════════════════════════════════════════════════════
+function toggleFav(natinf,e){
+  if(e){e.stopPropagation();e.preventDefault();}
+  FAVS.has(natinf)?FAVS.delete(natinf):FAVS.add(natinf);
+  saveFavs();updateBadges();
+  document.querySelectorAll(`.fbtn[data-n="${natinf}"]`).forEach(b=>b.textContent=FAVS.has(natinf)?'⭐':'☆');
+  const mf=document.getElementById('m-fav');
+  if(mf&&mf.dataset.n===natinf){const on=FAVS.has(natinf);mf.textContent=on?'⭐ Retirer des favoris':'☆ Ajouter aux favoris';mf.classList.toggle('on',on);}
+  if(document.getElementById('page-favs').classList.contains('active'))renderFavs();
+}
+
+// ═══════════════════════════════════════════════════════════
+// BUILD CARD
+// ═══════════════════════════════════════════════════════════
+function buildCard(item,q){
+  const isDel=item.is_delit;
+  const isMod=item._modified;
+  const isPers=item._perso;
+  const color=isPers?'p':isDel?'d':(CC[item.categorie]||'b');
+  const raw=item.description;
+  const trunc=raw.length>140?raw.substring(0,140)+'…':raw;
+  const desc=q?hl(trunc,q):esc(trunc);
+  const amende=item.amende||AM[item.classe]||'';
+  const faved=FAVS.has(item.natinf);
+
+  let badges='';
+  if(isDel) badges+=`<span class="badge b-dl">Délit</span>`;
+  else if(item.classe){badges+=`<span class="badge b-cl">Cl.${esc(item.classe)}</span>`;if(amende)badges+=`<span class="badge b-am">${amende}</span>`;}
+  if(item.pts_retrait) badges+=`<span class="badge b-pt">-${item.pts_retrait}pts</span>`;
+  if(item.immo) badges+=`<span class="b-ic" title="Immobilisation">🚧</span>`;
+  if(item.fourr) badges+=`<span class="b-ic" title="Fourrière">🏚️</span>`;
+  if(item.confisc) badges+=`<span class="b-ic" title="Confiscation">📦</span>`;
+  if(item.depist) badges+=`<span class="b-ic" title="Dépistage">🔬</span>`;
+  if(isMod) badges+=`<span class="badge b-mo">Modifié</span>`;
+  if(isPers) badges+=`<span class="badge b-pe">Perso</span>`;
+  badges+=`<span class="bcat">${esc(item.categorie)}</span>`;
+
+  return `<div class="card" data-c="${color}">
+    <div class="ctop">
+      <div class="cdesc" onclick="openModal('${esc(item.natinf)}')">${desc}</div>
+      <div class="cright">
+        <div class="cnat" onclick="openModal('${esc(item.natinf)}')">${esc(item.natinf)}</div>
+        <button class="fbtn" data-n="${esc(item.natinf)}" onclick="toggleFav('${esc(item.natinf)}',event)">${faved?'⭐':'☆'}</button>
+      </div>
+    </div>
+    <div class="cfoot">${badges}</div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER SEARCH
+// ═══════════════════════════════════════════════════════════
+function render(){
+  const tokens=curQ?curQ.split(/\s+/).filter(Boolean):[];
+  const all=getAll();
+  const filtered=all.filter(item=>{
+    if(curF!=='all'&&item.categorie!==curF) return false;
+    if(!tokens.length) return true;
+    const hay=[item.description,item.natinf,item.categorie,item.classe,(item.articles||[]).join(' ')].join(' ').toLowerCase();
+    return tokens.every(t=>hay.includes(t));
+  });
+  document.getElementById('rc').textContent=filtered.length;
+  document.getElementById('sx').textContent=curQ?`« ${esc(curQ)} »`:curF!=='all'?curF:'Marmotte34 · 10 juin 2025';
+  const container=document.getElementById('results');
+  if(!filtered.length){container.innerHTML=`<div class="empty-state"><div class="ei">🔎</div><h3>Aucun résultat</h3><p>Essayez un autre mot-clé ou NATINF</p></div>`;return;}
+  const show=filtered.slice(0,200);
+  container.innerHTML=show.map(item=>buildCard(item,curQ)).join('');
+  if(filtered.length>200)container.innerHTML+=`<div style="text-align:center;padding:14px;font-size:12px;color:var(--t2)">${filtered.length-200} résultats supplémentaires — affinez la recherche</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER FAVS
+// ═══════════════════════════════════════════════════════════
+function renderFavs(){
+  const all=getAll();
+  const favItems=all.filter(i=>FAVS.has(i.natinf));
+  const tokens=fsQ?fsQ.split(/\s+/).filter(Boolean):[];
+  const filtered=tokens.length?favItems.filter(item=>{
+    const hay=[item.description,item.natinf,item.categorie].join(' ').toLowerCase();
+    return tokens.every(t=>hay.includes(t));
+  }):favItems;
+  document.getElementById('favhdr').innerHTML=`<strong>${filtered.length}</strong> favori${filtered.length>1?'s':''}${tokens.length?' (filtré)':''}`;
+  const container=document.getElementById('fav-results');
+  if(!FAVS.size){container.innerHTML=`<div class="empty-state"><div class="ei">⭐</div><h3>Aucun favori</h3><p>Appuyez sur ☆ pour ajouter<br>une infraction ici</p></div>`;document.getElementById('favhdr').innerHTML='';return;}
+  if(!filtered.length){container.innerHTML=`<div class="empty-state"><div class="ei">🔎</div><h3>Aucun résultat</h3><p>Aucun favori ne correspond</p></div>`;return;}
+  container.innerHTML=`<div style="padding:4px 10px 110px;display:flex;flex-direction:column;gap:5px">${filtered.map(item=>buildCard(item,fsQ)).join('')}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER EDIT
+// ═══════════════════════════════════════════════════════════
+function renderEdit(){
+  const nm=Object.keys(MODS).length,np=PERSO.length;
+  document.getElementById('edit-stats').textContent=`${nm} libellé${nm>1?'s':''} modifié${nm>1?'s':''} · ${np} infraction${np>1?'s':''} personnalisée${np>1?'s':''}`;
+
+  const items=[];
+  // Modified base infractions
+  if(efF==='all'||efF==='modif'){
+    Object.keys(MODS).forEach(nat=>{
+      const orig=INFRACTIONS.find(i=>i.natinf===nat);
+      if(orig) items.push({...orig,...MODS[nat],_modified:true});
+    });
+  }
+  // Personal infractions
+  if(efF==='all'||efF==='perso'){
+    PERSO.forEach(p=>items.push({...p,_perso:true}));
+  }
+
+  const container=document.getElementById('edit-list');
+  if(!items.length){
+    container.innerHTML=`<div class="empty-state" style="padding:40px 20px"><div class="ei">${efF==='modif'?'✏️':efF==='perso'?'➕':'📝'}</div><h3>${efF==='modif'?'Aucune modification':'Aucune infraction personnalisée'}</h3><p>Utilisez les boutons ci-dessus<br>ou ✏️ Modifier dans une fiche</p></div>`;
+    return;
+  }
+
+  container.innerHTML=items.map(item=>{
+    const isMod=item._modified;const isPers=item._perso;
+    const amende=item.amende||AM[item.classe]||'';
+    let meta='';
+    if(item.is_delit) meta+=`<span class="badge b-dl">Délit</span>`;
+    else if(item.classe){meta+=`<span class="badge b-cl">Cl.${esc(item.classe)}</span>`;if(amende)meta+=`<span class="badge b-am">${amende}</span>`;}
+    if(isMod) meta+=`<span class="badge b-mo">Modifié</span>`;
+    if(isPers) meta+=`<span class="badge b-pe">Perso</span>`;
+    meta+=`<span class="bcat">${esc(item.categorie)}</span>`;
+
+    const btns=isPers
+      ?`<button class="btn-sm edit" onclick="openEditItem('${esc(item.natinf)}')">✏️ Éditer</button>
+         <button class="btn-sm del" onclick="delPerso('${esc(item.natinf)}')">🗑️</button>`
+      :`<button class="btn-sm edit" onclick="openEditItem('${esc(item.natinf)}')">✏️ Éditer</button>
+         <button class="btn-sm rst" onclick="restoreItem('${esc(item.natinf)}')">↩️ Rétablir</button>`;
+
+    return `<div class="edit-item ${isMod?'modif':'perso'}">
+      <div class="edit-item-body">
+        <div class="edit-item-desc"><strong style="font-family:'DM Mono',monospace;font-size:11px;color:var(--t2)">${esc(item.natinf)}</strong> — ${esc(item.description.substring(0,100))}${item.description.length>100?'…':''}</div>
+        <div class="edit-item-meta">${meta}</div>
+      </div>
+      <div class="edit-item-btns">${btns}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// MODAL DÉTAIL
+// ═══════════════════════════════════════════════════════════
+function openModal(natinf){
+  const item=getItem(natinf);if(!item)return;
+  const amende=item.amende||AM[item.classe]||'';
+  const faved=FAVS.has(natinf);
+
+  let badgesH='';
+  if(item.is_delit) badgesH+=`<span class="badge b-dl">Délit</span>`;
+  else if(item.classe){badgesH+=`<span class="badge b-cl">Classe ${esc(item.classe)}</span>`;if(amende)badgesH+=`<span class="badge b-am">Amende : ${amende}</span>`;}
+  if(item.pts_retrait) badgesH+=`<span class="badge b-pt">Retrait : ${item.pts_retrait} pts</span>`;
+  if(item._modified) badgesH+=`<span class="badge b-mo">Libellé modifié</span>`;
+  if(item._perso) badgesH+=`<span class="badge b-pe">Infraction personnalisée</span>`;
+
+  let artH='';
+  if(item.articles&&item.articles.length){artH=`<div class="msec"><div class="msect">Textes</div><div class="marts">${item.articles.map(a=>`<span class="achip">${esc(a)}</span>`).join('')}</div></div>`;}
+  const measures=[{k:'immo',icon:'🚧',l:'Immobilisation'},{k:'fourr',icon:'🏚️',l:'Fourrière'},{k:'confisc',icon:'📦',l:'Confiscation'},{k:'depist',icon:'🔬',l:'Dépistage'}];
+  let measH='';
+  if(measures.some(m=>item[m.k])){measH=`<div class="msec"><div class="msect">Mesures</div><div class="mmgrid">${measures.map(m=>`<div class="mmeas${item[m.k]?' on':''}"><span>${item[m.k]?m.icon:'○'}</span><span>${m.l}</span></div>`).join('')}</div></div>`;}
+
+  document.getElementById('mbody').innerHTML=`
+    <div class="mn">NATINF ${esc(natinf)} · ${esc(item.categorie)}</div>
+    <div class="mt">${esc(item.description)}</div>
+    <div class="mb">${badgesH}</div>
+    ${artH}${measH}
+    <button class="mfav${faved?' on':''}" id="m-fav" data-n="${esc(natinf)}" onclick="toggleFav('${esc(natinf)}',event);this.textContent=FAVS.has('${esc(natinf)}')?'⭐ Retirer des favoris':'☆ Ajouter aux favoris';this.classList.toggle('on',FAVS.has('${esc(natinf)}'))">${faved?'⭐ Retirer des favoris':'☆ Ajouter aux favoris'}</button>
+    <button class="medit" onclick="document.getElementById('modal').classList.remove('open');openEditItem('${esc(natinf)}')">✏️ Modifier cette infraction</button>
+    <button class="mclose" onclick="document.getElementById('modal').classList.remove('open')">Fermer</button>`;
+
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('msheet').scrollTop=0;
+}
+function closeM(e){if(e.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('open');}
+
+// ═══════════════════════════════════════════════════════════
+// MODAL ÉDITION
+// ═══════════════════════════════════════════════════════════
+const CLASSE_OPTS=['','1','2','3','4','5','1 bis','2 bis','3 bis','4 bis','DELIT'];
+
+function openEditNew(){
+  const cats=CATS;
+  document.getElementById('ebody').innerHTML=buildEditForm(null, cats);
+  document.getElementById('emodal').classList.add('open');
+  document.getElementById('emodal').scrollTop=0;
+}
+
+function openEditItem(natinf){
+  const item=getItem(natinf);
+  const cats=CATS;
+  document.getElementById('ebody').innerHTML=buildEditForm(item, cats);
+  document.getElementById('emodal').classList.add('open');
+  document.getElementById('emodal').scrollTop=0;
+}
+
+function buildEditForm(item, cats){
+  const isNew=!item;
+  const isPers=item&&item._perso;
+  const nat=item?item.natinf:'';
+  const desc=item?item.description:'';
+  const cat=item?item.categorie:(cats[0]||'');
+  const cl=item?item.classe:'';
+  const pts=item?item.pts_retrait||'':'';
+  const arts=item&&item.articles?item.articles.join(', '):'';
+  const immo=item&&item.immo;
+  const fourr=item&&item.fourr;
+  const confisc=item&&item.confisc;
+  const depist=item&&item.depist;
+
+  const catOpts=cats.map(c=>`<option value="${esc(c)}"${c===cat?' selected':''}>${esc(c)}</option>`).join('');
+  const clOpts=CLASSE_OPTS.map(o=>`<option value="${esc(o)}"${o===cl?' selected':''}>${o||'— Non renseigné —'}</option>`).join('');
+
+  const delBtn=isPers?`<button class="btn-delete" onclick="delPerso('${esc(nat)}');closeEditModal()">🗑️ Supprimer définitivement</button>`:'';
+  const rstBtn=(!isNew&&!isPers&&MODS[nat])?`<button class="btn-restore" onclick="restoreItem('${esc(nat)}');closeEditModal()">↩️ Rétablir l'original</button>`:'';
+
+  // NATINF: éditable pour les perso ET pour les infractions de base
+  // Explication point 3: le NATINF est la CLÉ d'identification unique
+  // On permet de le modifier pour les perso; pour les infractions de base
+  // on affiche un avertissement mais on autorise (pour corriger les erreurs d'extraction)
+  const natField=isNew
+    ?`<input class="field-input" id="e-nat" type="text" value="" placeholder="ex: 99001 ou laisser vide pour auto">`
+    :`<input class="field-input" id="e-nat" type="text" value="${esc(nat)}" ${!isPers?'readonly':''}>
+      <div class="natinf-note">${isPers?'Modifiable — identifiant unique de cette infraction':'NATINF source Marmotte34 (lecture seule) — seul le libellé est modifiable'}</div>`;
+
+  return `<div class="etitle">${isNew?'➕ Ajouter une infraction':'✏️ Modifier l\'infraction'}</div>
+    <div class="field-group">
+      <div class="field-label">NATINF</div>
+      ${natField}
+    </div>
+    <div class="field-group">
+      <div class="field-label">Description / Libellé *</div>
+      <textarea class="field-textarea" id="e-desc" placeholder="Libellé complet de l'infraction">${esc(desc)}</textarea>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <div class="field-label">Catégorie</div>
+        <select class="field-select" id="e-cat">${catOpts}</select>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Classe</div>
+        <select class="field-select" id="e-cl">${clOpts}</select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <div class="field-label">Retrait de points</div>
+        <input class="field-input" id="e-pts" type="number" min="0" max="6" value="${esc(pts)}" placeholder="0-6">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Articles (séparés par ,)</div>
+        <input class="field-input" id="e-arts" type="text" value="${esc(arts)}" placeholder="R.412-6-1, L.121-2">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Mesures complémentaires</div>
+      <div class="check-row">
+        <label class="chk-item"><input type="checkbox" id="e-immo"${immo?' checked':''}><span>🚧 Immobilisation</span></label>
+        <label class="chk-item"><input type="checkbox" id="e-fourr"${fourr?' checked':''}><span>🏚️ Fourrière</span></label>
+        <label class="chk-item"><input type="checkbox" id="e-confisc"${confisc?' checked':''}><span>📦 Confiscation</span></label>
+        <label class="chk-item"><input type="checkbox" id="e-depist"${depist?' checked':''}><span>🔬 Dépistage</span></label>
+      </div>
+    </div>
+    ${rstBtn}${delBtn}
+    <button class="btn-save" onclick="saveEdit('${esc(nat||'')}','${isNew?'new':isPers?'perso':'base'}')">💾 Enregistrer</button>
+    <button class="btn-cancel" onclick="closeEditModal()">Annuler</button>`;
+}
+
+function closeEditModal(){document.getElementById('emodal').classList.remove('open');}
+
+function saveEdit(origNat, mode){
+  const desc=document.getElementById('e-desc').value.trim();
+  if(!desc){toast('⚠️ La description est obligatoire');return;}
+
+  const nat=(document.getElementById('e-nat').value||'').trim();
+  const cat=document.getElementById('e-cat').value;
+  const cl=document.getElementById('e-cl').value;
+  const pts=document.getElementById('e-pts').value;
+  const arts=document.getElementById('e-arts').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const immo=document.getElementById('e-immo').checked;
+  const fourr=document.getElementById('e-fourr').checked;
+  const confisc=document.getElementById('e-confisc').checked;
+  const depist=document.getElementById('e-depist').checked;
+
+  if(mode==='new'){
+    // Auto-generate NATINF if empty
+    const newNat=nat||('PERSO_'+Date.now());
+    // Check uniqueness
+    if(getAll().find(i=>i.natinf===newNat)){toast('⚠️ Ce NATINF existe déjà');return;}
+    PERSO.push({id:INFRACTIONS.length+PERSO.length,natinf:newNat,description:desc,categorie:cat,classe:cl,amende:AM[cl]||'',pts_retrait:pts||null,articles:arts,immo,fourr,confisc,depist,is_delit:cl==='DELIT',_perso:true});
+    savePerso();
+    toast('✅ Infraction ajoutée');
+  } else if(mode==='perso'){
+    const idx=PERSO.findIndex(p=>p.natinf===origNat);
+    if(idx>=0){
+      const newNat=nat||origNat;
+      if(newNat!==origNat && getAll().find(i=>i.natinf===newNat)){toast('⚠️ Ce NATINF existe déjà');return;}
+      PERSO[idx]={...PERSO[idx],natinf:newNat,description:desc,categorie:cat,classe:cl,amende:AM[cl]||'',pts_retrait:pts||null,articles:arts,immo,fourr,confisc,depist,is_delit:cl==='DELIT'};
+      savePerso();
+      toast('✅ Infraction mise à jour');
+    }
+  } else {
+    // base infraction — save override (description only + mesures)
+    MODS[origNat]={description:desc,categorie:cat,classe:cl,amende:AM[cl]||'',pts_retrait:pts||null,articles:arts,immo,fourr,confisc,depist,is_delit:cl==='DELIT'};
+    saveMods();
+    toast('✅ Modification enregistrée');
+  }
+
+  closeEditModal();
+  updateBadges();
+  buildFilters();
+  render();
+  if(document.getElementById('page-edit').classList.contains('active'))renderEdit();
+}
+
+function delPerso(natinf){
+  if(!confirm('Supprimer cette infraction personnalisée ?'))return;
+  PERSO=PERSO.filter(p=>p.natinf!==natinf);
+  savePerso();
+  FAVS.delete(natinf);saveFavs();
+  updateBadges();buildFilters();render();renderEdit();
+  toast('🗑️ Infraction supprimée');
+}
+
+function restoreItem(natinf){
+  if(!confirm('Rétablir le libellé original ?'))return;
+  delete MODS[natinf];saveMods();
+  updateBadges();render();renderEdit();
+  toast('↩️ Rétabli');
+}
+
+// ═══════════════════════════════════════════════════════════
+// IMPORT CSV
+// ═══════════════════════════════════════════════════════════
+function importCSV(e){
+  const file=e.target.files[0];
+  if(!file){return;}
+  const reader=new FileReader();
+  reader.onload=evt=>{
+    const lines=evt.target.result.split('\n').filter(l=>l.trim());
+    let added=0,skipped=0,errors=0;
+    const allNat=new Set(getAll().map(i=>i.natinf));
+
+    for(let i=1;i<lines.length;i++){  // skip header row
+      const cols=parseCSVLine(lines[i]);
+      if(cols.length<2) continue;
+      const [nat,desc,cat,cl,,pts,arts,immo,fourr,confisc]=cols;
+      const natTrim=(nat||'').trim();
+      const descTrim=(desc||'').trim();
+      if(!descTrim){errors++;continue;}
+      const finalNat=natTrim||('IMPORT_'+Date.now()+'_'+i);
+      if(allNat.has(finalNat)){skipped++;continue;}
+      allNat.add(finalNat);
+      const isFavCSV=(cols[10]||'').trim().toUpperCase()==='OUI';
+      PERSO.push({
+        id:INFRACTIONS.length+PERSO.length,
+        natinf:finalNat,
+        description:descTrim,
+        categorie:(cat||'').trim()||'Circulation',
+        classe:(cl||'').trim(),
+        amende:AM[(cl||'').trim()]||'',
+        pts_retrait:(pts||'').trim()||null,
+        articles:(arts||'').split(',').map(s=>s.trim()).filter(Boolean),
+        immo:(immo||'').trim().toUpperCase()==='OUI',
+        fourr:(fourr||'').trim().toUpperCase()==='OUI',
+        confisc:(confisc||'').trim().toUpperCase()==='OUI',
+        depist:false,
+        is_delit:(cl||'').trim()==='DELIT',
+        _perso:true,
+      });
+      if(isFavCSV){FAVS.add(finalNat);}
+      added++;
+    }
+    savePerso();saveFavs();updateBadges();buildFilters();render();renderEdit();
+    toast(`📥 ${added} ajoutée${added>1?'s':''} · ${skipped} ignorée${skipped>1?'s':''}`);
+    e.target.value='';
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+function parseCSVLine(line){
+  const result=[];let cur='';let inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){inQ=!inQ;}
+    else if(c===','&&!inQ){result.push(cur);cur='';}
+    else{cur+=c;}
+  }
+  result.push(cur);
+  return result.map(s=>s.trim().replace(/^"|"$/g,''));
+}
+
+// EXPORT CSV
+function exportCSV(){
+  const items=[];
+  Object.keys(MODS).forEach(nat=>{
+    const orig=INFRACTIONS.find(i=>i.natinf===nat);
+    if(orig)items.push({...orig,...MODS[nat],_modified:true});
+  });
+  PERSO.forEach(p=>items.push({...p,_perso:true}));
+  if(!items.length){toast('Aucune modification à exporter');return;}
+
+  const header='NATINF,DESCRIPTION,CATÉGORIE,CLASSE,AMENDE,POINTS,ARTICLES,IMMO,FOURRIÈRE,CONFISC.';
+  const rows=items.map(item=>[
+    item.natinf,
+    `"${(item.description||'').replace(/"/g,'""')}"`,
+    item.categorie||'',item.classe||'',item.amende||'',item.pts_retrait||'',
+    `"${(item.articles||[]).join(', ')}"`,
+    item.immo?'OUI':'NON',item.fourr?'OUI':'NON',item.confisc?'OUI':'NON',
+  ].join(','));
+
+  const csv=[header,...rows].join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='memento_export.csv';a.click();
+  URL.revokeObjectURL(url);
+  toast(`📤 ${items.length} infraction${items.length>1?'s':''} exportée${items.length>1?'s':''}`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// OFFLINE / PWA
+// ═══════════════════════════════════════════════════════════
+const ob=document.getElementById('offl');
+window.addEventListener('online',()=>ob.classList.remove('show'));
+window.addEventListener('offline',()=>ob.classList.add('show'));
+if(!navigator.onLine)ob.classList.add('show');
+
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+const isStandalone=window.navigator.standalone===true||window.matchMedia('(display-mode:standalone)').matches;
+if(isIOS&&!isStandalone&&!sessionStorage.getItem('ios_hint')){
+  sessionStorage.setItem('ios_hint','1');
+  setTimeout(()=>toast('📲 Safari > Partager ↑ > Sur l\'écran d\'accueil',5000),3000);
+}
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>

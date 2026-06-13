@@ -135,6 +135,14 @@ mark{background:#f0883e33;color:var(--ac);border-radius:2px;padding:0 1px}
 /* FAV PAGE */
 .fav-hdr{padding:8px 12px 4px;font-size:13px;color:var(--t2)}
 .fav-hdr strong{color:var(--t1)}
+/* Sections catégories favoris */
+.fav-section{margin-bottom:4px}
+.fav-section-hdr{display:flex;align-items:center;gap:8px;padding:10px 12px 6px;position:sticky;top:41px;z-index:50;background:var(--bg)}
+.fav-section-icon{font-size:17px;line-height:1}
+.fav-section-title{font-size:12px;font-weight:600;color:var(--t1);flex:1}
+.fav-section-count{font-size:11px;color:var(--t2);background:var(--tg);padding:2px 7px;border-radius:10px}
+.fav-section-cards{display:flex;flex-direction:column;gap:5px;padding:0 10px}
+.fav-section-sep{height:1px;background:var(--bd);margin:4px 12px 0}
 .empty-state{text-align:center;padding:60px 20px;color:var(--t2)}
 .empty-state .ei{font-size:40px;margin-bottom:12px}
 .empty-state h3{font-size:16px;color:var(--t1);margin-bottom:6px}
@@ -286,7 +294,7 @@ let dQ=null,dFS=null;
 
 // STORAGE: favoris, modifs, ajouts perso
 // ── VERSION : force reinit favoris si nouvelle version ──────────
-const APP_VERSION='v10';
+const APP_VERSION='v11';
 const storedVersion=localStorage.getItem('app_version');
 
 let MODS=JSON.parse(localStorage.getItem('mods')||'{}');
@@ -529,11 +537,53 @@ function renderFavs(){
     const hay=[item.description,item.natinf,item.categorie].join(' ').toLowerCase();
     return tokens.every(t=>hay.includes(t));
   }):favItems;
-  document.getElementById('favhdr').innerHTML=`<strong>${filtered.length}</strong> favori${filtered.length>1?'s':''}${tokens.length?' (filtré)':''}`;
+
   const container=document.getElementById('fav-results');
-  if(!FAVS.size){container.innerHTML=`<div class="empty-state"><div class="ei">⭐</div><h3>Aucun favori</h3><p>Appuyez sur ☆ pour ajouter<br>une infraction ici</p></div>`;document.getElementById('favhdr').innerHTML='';return;}
-  if(!filtered.length){container.innerHTML=`<div class="empty-state"><div class="ei">🔎</div><h3>Aucun résultat</h3><p>Aucun favori ne correspond</p></div>`;return;}
-  container.innerHTML=`<div style="padding:4px 10px 110px;display:flex;flex-direction:column;gap:5px">${filtered.map(item=>buildCard(item,fsQ)).join('')}</div>`;
+
+  if(!FAVS.size){
+    document.getElementById('favhdr').innerHTML='';
+    container.innerHTML=`<div class="empty-state"><div class="ei">⭐</div><h3>Aucun favori</h3><p>Appuyez sur ☆ sur une infraction<br>pour l'ajouter ici</p></div>`;
+    return;
+  }
+  if(!filtered.length){
+    document.getElementById('favhdr').innerHTML='';
+    container.innerHTML=`<div class="empty-state"><div class="ei">🔎</div><h3>Aucun résultat</h3><p>Aucun favori ne correspond</p></div>`;
+    return;
+  }
+
+  // Regrouper par catégorie dans l'ordre défini
+  const grouped={};
+  filtered.forEach(item=>{
+    const cat=item.categorie;
+    if(!grouped[cat]) grouped[cat]=[];
+    grouped[cat].push(item);
+  });
+
+  // Ordre des catégories selon CAT_ORDER_DEFINED, puis autres
+  const orderedCats=CAT_ORDER_DEFINED.filter(c=>grouped[c]);
+  Object.keys(grouped).forEach(c=>{if(!orderedCats.includes(c))orderedCats.push(c);});
+
+  document.getElementById('favhdr').innerHTML=
+    `<strong>${filtered.length}</strong> favori${filtered.length>1?'s':''}${tokens.length?' (filtré)':''} · <span style="color:var(--t2)">${orderedCats.length} catégorie${orderedCats.length>1?'s':''}</span>`;
+
+  let html='<div style="padding:4px 0 110px">';
+  orderedCats.forEach((cat,idx)=>{
+    const items=grouped[cat];
+    const icon=CI[cat]||'📋';
+    html+=`<div class="fav-section">
+      <div class="fav-section-hdr">
+        <span class="fav-section-icon">${icon}</span>
+        <span class="fav-section-title">${esc(cat)}</span>
+        <span class="fav-section-count">${items.length}</span>
+      </div>
+      <div class="fav-section-cards">
+        ${items.map(item=>buildCard(item,fsQ)).join('')}
+      </div>
+    </div>`;
+    if(idx<orderedCats.length-1) html+=`<div class="fav-section-sep"></div>`;
+  });
+  html+='</div>';
+  container.innerHTML=html;
 }
 
 // ═══════════════════════════════════════════════════════════

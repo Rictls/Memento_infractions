@@ -266,19 +266,36 @@ mark{background:#f0883e33;color:var(--ac);border-radius:2px;padding:0 1px}
 // CONSTANTES
 // ═══════════════════════════════════════════════════════════
 const AM={'1':'11 €','2':'35 €','3':'68 €','4':'135 €','5':'750 €','1 bis':'17 €','2 bis':'22 €','3 bis':'45 €','4 bis':'90 €'};
-const CC={'Stationnement':'v','Vitesse':'j','Alcool/Stupéfiant':'o','Signalisation':'o','Dépassement':'o','Priorité':'o','Refus/Obstacles':'o','Permis de conduire':'o','Ceinture/Enfants':'o','Assurance':'b','Certificat/Immatriculation':'b','Circulation':'b','Éclairage':'b','Bruits/Fumées':'b','Chargement':'b','Poids lourds/Gabarit':'b','Autoroute/Voie express':'b','2 et 3 roues':'b','Immobilisation/Fourrière':'b','Tuning/Équipements':'b','Piétons/Cyclistes':'b','Quads/Voiturettes':'b','Environnement':'b'};
-const CI={'Stationnement':'🅿️','Vitesse':'⚡','Alcool/Stupéfiant':'🍺','Signalisation':'🚦','Dépassement':'🏎️','Priorité':'⚠️','Refus/Obstacles':'🚫','Permis de conduire':'📄','Ceinture/Enfants':'👶','Assurance':'🛡️','Certificat/Immatriculation':'📋','Circulation':'🚗','Éclairage':'💡','Bruits/Fumées':'📢','Chargement':'📦','Poids lourds/Gabarit':'🚛','Autoroute/Voie express':'🛣️','2 et 3 roues':'🏍️','Immobilisation/Fourrière':'🔒','Tuning/Équipements':'🔧','Piétons/Cyclistes':'🚶','Quads/Voiturettes':'🛺','Environnement':'🌿'};
+const CC={
+  'Stationnement':'v','Vitesse':'j',
+  'Alcool/Stupéfiant':'o','Signalisation':'o','Dépassement':'o',
+  'Priorité':'o','Refus/Obstacles':'o','Permis / BSR':'o',
+  'Ceinture':'o','Comportement du conducteur':'o','Equipement individuel':'o',
+  'Assurance':'b','Certificat/Immatriculation':'b','Circulation':'b',
+  'Éclairage':'b','Bruits/Fumées':'b','Chargement':'b',
+  'Poids lourds/Gabarit':'b','Autoroute/Voie express':'b',
+  '2 et 3 roues':'b','EDPM/Trottinettes':'b','Immobilisation/Fourrière':'b',
+  'Tuning/Équipements':'b','Piétons/Cyclistes':'b','Quads/Voiturettes':'b',
+  'Environnement':'b','Rodéos motorisés':'b','Taxis/VTC':'b',
+  'Urgence sanitaire':'b','Ordonnances médicales':'b',
+}
+const CI={'Stationnement':'🅿️','Vitesse':'⚡','Alcool/Stupéfiant':'🍺',
+  'Signalisation':'🚦','Dépassement':'🏎️','Priorité':'⚠️','Refus/Obstacles':'🚫',
+  'Permis / BSR':'📄','Ceinture':'👶','Equipement individuel':'🦺',
+  'Comportement du conducteur':'🧠','Assurance':'🛡️',
+  'Certificat/Immatriculation':'📋','Circulation':'🚗','Éclairage':'💡',
+  'Bruits/Fumées':'📢','Chargement':'📦','Poids lourds/Gabarit':'🚛',
+  'Autoroute/Voie express':'🛣️','2 et 3 roues':'🏍️','EDPM/Trottinettes':'🛴',
+  'Immobilisation/Fourrière':'🔒','Tuning/Équipements':'🔧',
+  'Piétons/Cyclistes':'🚶','Quads/Voiturettes':'🛺','Environnement':'🌿',
+  'Rodéos motorisés':'🏁','Taxis/VTC':'🚕','Urgence sanitaire':'🏥',
+  'Ordonnances médicales':'💊'};
 // Ordre des catégories défini manuellement
 const CAT_ORDER_DEFINED=[
   // ── Groupe principal ──────────────────────
-  'Stationnement','Circulation','Signalisation','Priorité','Bruits/Fumées',
-  'Certificat/Immatriculation','Ceinture/Enfants','Permis de conduire','Assurance',
-  '2 et 3 roues','EDPM/Trottinettes','Quads/Voiturettes','Piétons/Cyclistes',
+  'Stationnement','Circulation','Comportement du conducteur','Signalisation','Priorité','Bruits/Fumées','Certificat/Immatriculation','Ceinture','Equipement individuel','Permis / BSR','Assurance','2 et 3 roues','EDPM/Trottinettes','Quads/Voiturettes','Piétons/Cyclistes',
   // ── Groupe secondaire ─────────────────────
-  'Chargement','Dépassement','Ordonnances médicales',
-  'Autoroute/Voie express','Environnement','Refus/Obstacles','Rodéos motorisés',
-  'Alcool/Stupéfiant','Taxis/VTC','Tuning/Équipements','Urgence sanitaire','Vitesse',
-  'Éclairage','Immobilisation/Fourrière','Poids lourds/Gabarit',
+  'Chargement','Dépassement','Ordonnances médicales','Autoroute/Voie express','Environnement','Refus/Obstacles','Rodéos motorisés','Alcool/Stupéfiant','Taxis/VTC','Tuning/Équipements','Urgence sanitaire','Vitesse','Éclairage','Immobilisation/Fourrière','Poids lourds/Gabarit',
 ];
 // Build ordered list keeping only cats present in data
 const existingCats=new Set(typeof INFRACTIONS!=='undefined'?INFRACTIONS.map(i=>i.categorie):[]);
@@ -294,7 +311,7 @@ let dQ=null,dFS=null;
 
 // STORAGE: favoris, modifs, ajouts perso
 // ── VERSION : force reinit favoris si nouvelle version ──────────
-const APP_VERSION='v11';
+const APP_VERSION='v12';
 const storedVersion=localStorage.getItem('app_version');
 
 let MODS=JSON.parse(localStorage.getItem('mods')||'{}');
@@ -352,7 +369,7 @@ function buildFilters(){
   let separatorAdded=false;
   CATS.forEach(cat=>{
     // Séparateur visuel entre groupe 1 et groupe 2
-    if(!separatorAdded && !CAT_ORDER_DEFINED.slice(0,13).includes(cat)){
+    if(!separatorAdded && !CAT_ORDER_DEFINED.slice(0,15).includes(cat)){
       separatorAdded=true;
       const sep=document.createElement('div');
       sep.style.cssText='flex-shrink:0;width:1px;background:var(--bd);margin:4px 2px;align-self:stretch';

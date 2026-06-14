@@ -4,8 +4,8 @@
   "description": "Référentiel infractions routières — Marmotte34 2025",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0d1117",
-  "theme_color": "#0d1117",
+  "background_color": "#f0f2f5",
+  "theme_color": "#f0f2f5",
   "orientation": "portrait-primary",
   "lang": "fr",
   "icons": [
